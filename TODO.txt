@@ -1,0 +1,1 @@
+nav icons are irregular in size in mobile
