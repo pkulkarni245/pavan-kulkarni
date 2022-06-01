@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, signInAnonymously, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, addDoc, collection } from "firebase/firestore";
+import { getFirestore, addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { geohashForLocation } from "geofire-common";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCvprGFV_-tN_LEKbTdLr7uvEfmAsJZeyA",
@@ -41,9 +42,20 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     uid = user.uid;
     console.log(uid);
-    addDoc(collection(db, 'testing_users'), {
-      userId: uid,
-      timestamp: new Date().getTime()
-    });
+    var lat, long
+    navigator.geolocation.getCurrentPosition(getPos);
+    function getPos(pos) {
+      lat = pos.coords.latitude;
+      long = pos.coords.longitude;
+      const hash = geohashForLocation([lat, long]);
+
+      setDoc(doc(db, 'testing_users', uid), {
+        userId: uid,
+        timestamp: new Date().getTime(),
+        hash: hash,
+        lat: lat,
+        long: long
+      });
+    }
   }
 })
